@@ -1,0 +1,17 @@
+# NL2SQL 專案依賴套件
+
+# Web UI
+streamlit>=1.28.0
+
+# Microsoft Agent Framework (預覽版)
+agent-framework
+
+# Azure 相關
+azure-identity>=1.15.0
+openai>=1.12.0
+
+# SQL Server 連線
+pyodbc>=5.0.0
+
+# 環境變數
+python-dotenv>=1.0.0
