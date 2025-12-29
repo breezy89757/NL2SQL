@@ -4,6 +4,7 @@
 streamlit>=1.28.0
 
 # Microsoft Agent Framework (預覽版)
+# 安裝指令: pip install agent-framework --pre
 agent-framework
 
 # Azure 相關
@@ -12,6 +13,9 @@ openai>=1.12.0
 
 # SQL Server 連線
 pyodbc>=5.0.0
+
+# Function Tools 類型註解
+pydantic>=2.0.0
 
 # 環境變數
 python-dotenv>=1.0.0
