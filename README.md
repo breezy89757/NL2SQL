@@ -55,6 +55,17 @@ AZURE_OPENAI_API_VERSION=2025-01-01-preview
 SQL_SERVER_CONNECTION_STRING=Driver={ODBC Driver 18 for SQL Server};Server=localhost,1433;Database=master;UID=sa;PWD=YourPassword;TrustServerCertificate=yes;
 ```
 
+#### 使用 LiteLLM (自架 Proxy)
+
+如果你使用 [LiteLLM](https://github.com/BerriAI/litellm) 作為 OpenAI-compatible Proxy：
+
+```env
+AZURE_OPENAI_ENDPOINT=http://localhost:4000
+AZURE_OPENAI_API_KEY=sk-your-litellm-key
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
+AZURE_OPENAI_API_VERSION=2024-02-01
+```
+
 ### 3. 啟動資料庫 (Docker)
 
 ```bash
