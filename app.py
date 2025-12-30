@@ -71,7 +71,7 @@ def render_sidebar():
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("測試連線", use_container_width=True):
+            if st.button("測試連線", width="stretch"):
                 db = DatabaseConnector(connection_string)
                 success, message = db.test_connection()
                 if success:
@@ -80,7 +80,7 @@ def render_sidebar():
                     st.error(f"❌ {message}")
         
         with col2:
-            if st.button("載入 Schema", use_container_width=True):
+            if st.button("載入 Schema", width="stretch"):
                 try:
                     db = DatabaseConnector(connection_string)
                     extractor = SchemaExtractor(db)
@@ -157,7 +157,7 @@ def render_main_content():
         label_visibility="collapsed"
     )
     
-    if st.button("🔍 查詢", type="primary", use_container_width=True):
+    if st.button("🔍 查詢", type="primary", width="stretch"):
         if not query:
             st.warning("請輸入查詢問題")
             return
@@ -189,7 +189,7 @@ def render_main_content():
         if results["rows"]:
             import pandas as pd
             df = pd.DataFrame(results["rows"], columns=results["columns"])
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.dataframe(df, width="stretch", hide_index=True)
             st.caption(f"共 {len(results['rows'])} 筆資料")
         else:
             st.info("查詢成功，但沒有資料")

@@ -60,11 +60,18 @@ SQL_SERVER_CONNECTION_STRING=Driver={ODBC Driver 18 for SQL Server};Server=local
 如果你使用 [LiteLLM](https://github.com/BerriAI/litellm) 作為 OpenAI-compatible Proxy：
 
 ```env
+# 設定 Provider 為 litellm 或 openai
+OPENAI_PROVIDER=litellm
 AZURE_OPENAI_ENDPOINT=http://localhost:4000
 AZURE_OPENAI_API_KEY=sk-your-litellm-key
 AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
-AZURE_OPENAI_API_VERSION=2024-02-01
 ```
+
+> [!NOTE]
+> `OPENAI_PROVIDER` 可選值：
+> - `azure` (預設) - 使用 Azure OpenAI
+> - `openai` - 使用原生 OpenAI API
+> - `litellm` - 使用 LiteLLM Proxy
 
 ### 3. 啟動資料庫 (Docker)
 
@@ -92,6 +99,18 @@ uv run streamlit run app.py
 - `顯示所有客戶的姓名和 Email`
 - `顯示每個客戶的訂單總金額`
 - `找出金額超過 1000 的訂單`
+- `找出有填 Email 的員工` 👈 空值檢查
+
+### 📝 空值檢查規則
+
+Agent 會自動處理字串欄位的空值檢查：
+
+| 欄位類型 | 空值檢查方式 |
+|---------|---------------|
+| 字串 (VARCHAR, NVARCHAR) | `IS NOT NULL AND <> ''` |
+| 數字 (INT, DECIMAL) | `IS NOT NULL` |
+| 日期 (DATE, DATETIME) | `IS NOT NULL` |
+| 布林 (BIT) | `IS NOT NULL` 或 `= 1` |
 
 ## 📁 專案結構
 
@@ -106,6 +125,8 @@ NL2SQL/
 ├── pyproject.toml         # 專案設定 (uv)
 ├── docker-compose.yml     # SQL Server 容器設定
 ├── .env.template          # 環境變數範本
+├── tests/
+│   └── test_data.sql      # 測試資料與測試案例
 └── README.md
 ```
 

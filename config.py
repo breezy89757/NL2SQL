@@ -27,7 +27,7 @@ class AzureOpenAIConfig:
             endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
             api_key=os.getenv("AZURE_OPENAI_API_KEY", ""),
             deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o"),
-            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview"),
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2025-03-01-preview"),
         )
 
     def is_valid(self) -> bool:
@@ -55,3 +55,6 @@ class SQLServerConfig:
 # 全域設定實例
 azure_openai_config = AzureOpenAIConfig.from_env()
 sql_server_config = SQLServerConfig.from_env()
+
+# OpenAI Provider 設定 (azure / openai / litellm)
+openai_provider = os.getenv("OPENAI_PROVIDER", "azure")

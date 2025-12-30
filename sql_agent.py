@@ -12,12 +12,13 @@ import asyncio
 import os
 from typing import Optional
 
-from config import azure_openai_config
+from config import azure_openai_config, openai_provider
 
 # 嘗試導入 Agent Framework (預覽版)
 try:
     from agent_framework import ChatAgent
-    from agent_framework.azure import AzureOpenAIResponsesClient
+    from agent_framework.azure import AzureOpenAIChatClient
+    from agent_framework.openai import OpenAIChatClient
     from openai import AzureOpenAI as OpenAIClient
     AGENT_FRAMEWORK_AVAILABLE = True
 except ImportError:
@@ -54,6 +55,7 @@ SYSTEM_PROMPT = """你是一位 T-SQL 專家助手。你有以下工具可以使
 - 只生成 T-SQL 語法
 - 對於可能回傳大量資料的查詢，加上 TOP 限制
 - 對於複雜查詢，加上適當的註解
+- **空值檢查**：當使用者要查詢「非空」或「有值」的資料時，除了檢查 IS NOT NULL 之外，也要同時檢查不是空白字串，例如：WHERE [欄位] IS NOT NULL AND [欄位] <> ''
 
 ## 回應格式
 
@@ -91,17 +93,27 @@ class SQLAgent:
         try:
             # 設定環境變數供 Agent Framework 使用
             os.environ.setdefault("AZURE_OPENAI_ENDPOINT", self.config.endpoint)
-            os.environ.setdefault("AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME", self.config.deployment_name)
+            os.environ.setdefault("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME", self.config.deployment_name)
             
-            # 使用 API Key 建立客戶端
-            self.chat_client = AzureOpenAIResponsesClient(
-                api_key=self.config.api_key,
-                azure_endpoint=self.config.endpoint,
-                model=self.config.deployment_name
-            )
+            # 根據 Provider 選擇客戶端類型
+            provider = openai_provider.lower()
+            if provider == "openai" or provider == "litellm":
+                # 使用 OpenAI 兼容客戶端 (適用於 LiteLLM 或原生 OpenAI)
+                self.chat_client = OpenAIChatClient(
+                    api_key=self.config.api_key,
+                    openai_base=self.config.endpoint,
+                    model=self.config.deployment_name
+                )
+            else:
+                # 使用 Azure OpenAI ChatCompletions 客戶端 (預設)
+                self.chat_client = AzureOpenAIChatClient(
+                    api_key=self.config.api_key,
+                    azure_endpoint=self.config.endpoint,
+                    model=self.config.deployment_name
+                )
             self.tools = [get_database_schema, execute_sql, test_connection]
         except Exception as e:
-            print(f"Agent Framework 初始化失敗，回退到舊版模式: {e}")
+            print(f"Agent Framework 初始化失敗: {e}")
             self._use_agent_framework = False
             self._init_legacy_client()
 
@@ -165,15 +177,11 @@ class SQLAgent:
         if not self.is_ready():
             return "錯誤：Azure OpenAI 設定不完整，請檢查環境變數。"
 
-        # 嘗試使用 Agent Framework
+        # 使用 Agent Framework
         if self._use_agent_framework:
-            try:
-                return asyncio.run(self.generate_sql_async(natural_language))
-            except Exception as e:
-                print(f"Agent Framework 執行失敗，回退到舊版模式: {e}")
-                # 回退到舊版模式
-                return self._generate_sql_legacy(natural_language, schema_context)
+            return asyncio.run(self.generate_sql_async(natural_language))
         
+        # 僅在未啟用 Agent Framework 時使用舊版模式
         return self._generate_sql_legacy(natural_language, schema_context)
 
     def _generate_sql_legacy(self, natural_language: str, schema_context: str) -> str:
