@@ -1,145 +1,97 @@
-# NL2SQL - 自然語言轉 T-SQL 工具
+# NL2SQL
 
-將自然語言轉換為 T-SQL 查詢的 Web 應用程式，整合 Microsoft Agent Framework 與 Azure OpenAI。
+> 自然語言轉 T-SQL 查詢工具 — 整合 Microsoft Agent Framework 與 Azure OpenAI
+
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.40-FF4B4B?logo=streamlit)
+![Azure OpenAI](https://img.shields.io/badge/Azure-OpenAI-0078D4?logo=microsoft-azure)
+
+將自然語言轉換為 T-SQL 查詢的 Web 應用程式，具備自動 Schema 載入、SQL 自我修正等功能。
 
 ![NL2SQL Demo](docs/images/demo-main.png)
 
-## ✨ 功能特色
+## Features
 
-- 🤖 **Agentic Mode**：使用 Microsoft Agent Framework，自動取得 Schema、生成 SQL、測試執行
-- 🔄 **一鍵查詢**：輸入問題 → 直接顯示結果表格
-- 📋 **自動 Schema 載入**：首次查詢時自動從資料庫提取 Schema
-- 🛠️ **自我修正**：遇到 SQL 錯誤時自動分析並修正
+- **Agentic Mode** — 使用 Microsoft Agent Framework，自動取得 Schema、生成 SQL、測試執行
+- **一鍵查詢** — 輸入問題 → 直接顯示結果表格
+- **自動 Schema 載入** — 首次查詢時自動從資料庫提取 Schema
+- **自我修正** — 遇到 SQL 錯誤時自動分析並修正
 
-## 📸 使用範例
+## Tech Stack
 
-![查詢結果範例](docs/images/demo-results.png)
-
-## 🛠️ 技術棧
-
-| 類別 | 技術 |
-|------|------|
+| Category | Technology |
+|----------|------------|
 | Web UI | Streamlit |
 | AI Agent | Microsoft Agent Framework (Preview) |
 | LLM | Azure OpenAI (GPT-4o) |
-| 資料庫 | SQL Server (T-SQL) |
-| 套件管理 | uv |
+| Database | SQL Server (T-SQL) |
+| Package Manager | uv |
 
-## 🚀 快速開始
+## Quick Start
 
-### 1. 安裝依賴
+### 1. Install Dependencies
 
 ```bash
-# 使用 uv 建立虛擬環境並安裝依賴
 uv sync
 ```
 
-### 2. 設定環境變數
-
-複製 `.env.template` 為 `.env` 並填入您的設定：
+### 2. Configure Environment
 
 ```bash
 cp .env.template .env
 ```
 
-編輯 `.env` 檔案：
+Edit `.env`:
 
 ```env
-# Azure OpenAI 設定
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
 AZURE_OPENAI_API_KEY=your-api-key
 AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o
-AZURE_OPENAI_API_VERSION=2025-01-01-preview
-
-# SQL Server 連線字串
 SQL_SERVER_CONNECTION_STRING=Driver={ODBC Driver 18 for SQL Server};Server=localhost,1433;Database=master;UID=sa;PWD=YourPassword;TrustServerCertificate=yes;
 ```
 
-#### 使用 LiteLLM (自架 Proxy)
-
-如果你使用 [LiteLLM](https://github.com/BerriAI/litellm) 作為 OpenAI-compatible Proxy：
-
-```env
-# 設定 Provider 為 litellm 或 openai
-OPENAI_PROVIDER=litellm
-AZURE_OPENAI_ENDPOINT=http://localhost:4000
-AZURE_OPENAI_API_KEY=sk-your-litellm-key
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
-```
-
-> [!NOTE]
-> `OPENAI_PROVIDER` 可選值：
-> - `azure` (預設) - 使用 Azure OpenAI
-> - `openai` - 使用原生 OpenAI API
-> - `litellm` - 使用 LiteLLM Proxy
-
-### 3. 啟動資料庫 (Docker)
+### 3. Start Database (Docker)
 
 ```bash
 docker compose up -d
 ```
 
-### 4. 啟動應用程式
+### 4. Run
 
 ```bash
 uv run streamlit run app.py
 ```
 
-瀏覽器會自動開啟 http://localhost:8501
+Open http://localhost:8501
 
-## 📖 使用說明
-
-1. **輸入問題**：在輸入框輸入自然語言查詢
-2. **點擊查詢**：按「🔍 查詢」按鈕
-3. **查看結果**：直接顯示結果表格，SQL 詳情可展開查看
-
-### 查詢範例
+## Usage Examples
 
 - `列出所有資料表`
 - `顯示所有客戶的姓名和 Email`
 - `顯示每個客戶的訂單總金額`
 - `找出金額超過 1000 的訂單`
-- `找出有填 Email 的員工` 👈 空值檢查
 
-### 📝 空值檢查規則
-
-Agent 會自動處理字串欄位的空值檢查：
-
-| 欄位類型 | 空值檢查方式 |
-|---------|---------------|
-| 字串 (VARCHAR, NVARCHAR) | `IS NOT NULL AND <> ''` |
-| 數字 (INT, DECIMAL) | `IS NOT NULL` |
-| 日期 (DATE, DATETIME) | `IS NOT NULL` |
-| 布林 (BIT) | `IS NOT NULL` 或 `= 1` |
-
-## 📁 專案結構
+## Project Structure
 
 ```
 NL2SQL/
-├── app.py                 # Streamlit 主程式
-├── sql_agent.py           # NL2SQL Agent (Agent Framework + 備援)
-├── agent_tools.py         # Agent 自定義工具 (Schema/SQL執行)
-├── db_connector.py        # SQL Server 連線工具
-├── schema_extractor.py    # Schema 提取工具
-├── config.py              # 設定管理
-├── pyproject.toml         # 專案設定 (uv)
-├── docker-compose.yml     # SQL Server 容器設定
-├── .env.template          # 環境變數範本
-├── tests/
-│   └── test_data.sql      # 測試資料與測試案例
-└── README.md
+├── app.py              # Streamlit main app
+├── sql_agent.py        # NL2SQL Agent
+├── agent_tools.py      # Custom tools (Schema/SQL execution)
+├── db_connector.py     # SQL Server connector
+├── schema_extractor.py # Schema extraction
+├── config.py           # Configuration
+├── docker-compose.yml  # SQL Server container
+└── .env.template       # Environment template
 ```
 
-## ⚠️ 注意事項
+## Prerequisites
 
 > [!IMPORTANT]
-> **必要安裝步驟：**
-> 1. 安裝 **ODBC Driver 18 for SQL Server**
->    - [👉 點此下載 (Windows)](https://go.microsoft.com/fwlink/?linkid=2280795)
-> 
-> 2. 確保 Azure OpenAI 資源已建立並部署模型
-> 3. 確保 SQL Server 已啟動：`docker compose up -d`
+> 1. Install **ODBC Driver 18 for SQL Server** — [Download (Windows)](https://go.microsoft.com/fwlink/?linkid=2280795)
+> 2. Ensure Azure OpenAI resource is deployed
+> 3. Start SQL Server: `docker compose up -d`
 
-## 📄 License
+## License
 
 MIT
